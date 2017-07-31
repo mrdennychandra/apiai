@@ -1,11 +1,11 @@
 <?php
 $barang = $_POST['barang'];
-$text = 'anda memesan ' . $_POST;
+$text = 'anda memesan ' . $barang;
 $out = [
     'speech' => $text,
     'displayText' => $text,
     'data' => new stdClass(),
-    'contextOut' => [],
+    'contextOut' => $_POST,
     'source' => 'webhook'];
 header('Content-type: application/json');
 echo json_encode($out);

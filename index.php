@@ -4,9 +4,9 @@ $text = 'anda memesan ' . $barang;
 $out = [
     'speech' => $text,
     'displayText' => $text,
-    'data' => var_export($_POST),
+    'data' => [],
     'contextOut' => [],
     'source' => 'webhook'];
 header('Content-type: application/json');
-echo json_encode($out);
+echo json_encode($_POST);
 ?>

@@ -1,5 +1,5 @@
 <?php
-
+echo "test";
 $barang = $_POST['barang'];
-echo $barang;
+echo "anda memesan : " . $barang;
 ?>

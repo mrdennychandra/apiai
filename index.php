@@ -1,6 +1,6 @@
 <?php
 $barang = $_POST['barang'];
-$text = 'anda memesan ' . $barang;
+$text = 'anda memesan ' . $_POST;
 $out = [
     'speech' => $text,
     'displayText' => $text,

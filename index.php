@@ -1,6 +1,7 @@
 <?php
-$params = json_decode(file_get_contents('php://input'));
-$text = 'anda memesan ' . implode( ", ", $params );
+//$params = json_decode(file_get_contents('php://input'));
+$barang = $_POST['barang'];
+$text = 'anda memesan ' . $barang;
 $out = [
     'speech' => $text,
     'displayText' => $text,

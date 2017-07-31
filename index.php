@@ -1,6 +1,6 @@
 <?php
 //$params = json_decode(file_get_contents('php://input'));
-$barang = $_POST['barang'];
+$barang = $_SERVER['barang'];
 $text = 'anda memesan ' . $barang;
 $out = [
     'speech' => $text,

@@ -2,7 +2,7 @@
 
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
 require_once './functions.php';
-$token = "341798d4c59c49156235e09acd70972d9e145a2c";
+$token = "";
 
 $params = json_decode(file_get_contents('php://input'), TRUE);
 file_put_contents("log-" . date('Y-m-d') . ".txt", date('Y:m:d H:i:s') . ' - ' . file_get_contents('php://input') . PHP_EOL, FILE_APPEND);

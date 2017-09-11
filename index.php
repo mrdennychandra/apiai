@@ -1,8 +1,9 @@
 <?php
 
+date_default_timezone_set('Asia/Jakarta');
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
 require_once './functions.php';
-$token = "";
+$token = "341798d4c59c49156235e09acd70972d9e145a2c";
 
 $params = json_decode(file_get_contents('php://input'), TRUE);
 file_put_contents("log-" . date('Y-m-d') . ".txt", date('Y:m:d H:i:s') . ' - ' . file_get_contents('php://input') . PHP_EOL, FILE_APPEND);
@@ -26,15 +27,15 @@ if ($from == 'JOG') {
 /////////// HARD CODE BENTROK DENGAN API AI ///////// 
 $rangetimedayshiftarrival = $param['rangetimedayshiftarrival'];
 $jenistransportasi = $param['jenistransportasi'];
-$dt = new DateTime();
+
+$today = date("Y-m-d");
+$dt = new DateTime($today);
 if ($rangetimedayshiftarrival == 'besok') {
     $dt->add(new DateInterval('P1D')); //tambah 1 hari
 } else if ($rangetimedayshiftarrival == 'lusa') {
     $dt->add(new DateInterval('P2D')); //tambah 2 hari
 } else {
-    if (is_nan($rangetimedayshiftarrival)) {
-        $dt = new DateTime();
-    } else {
+    if (is_numeric($rangetimedayshiftarrival)) {
         $now = date('d');
         $add = $rangetimedayshiftarrival - $now;
         date_add($dt, date_interval_create_from_date_string($add . ' days'));
@@ -42,27 +43,36 @@ if ($rangetimedayshiftarrival == 'besok') {
 }
 $date = $dt->format('Y-m-d');
 if ($jenistransportasi == 'pesawat') {
-    $results[0] = search_flight($token, $from, $to, $date);
-    $output = '';
-    $idx = 0;
-    if ($results && count($results) > 0) {
-        foreach ($results as $i => $r) {
-            if (is_array($r)) {
-                foreach ($r as $key => $row) {
-                    if (is_array($row)) {
-                        foreach ($row as $k => $v) {
-                            if ($idx < 7) {
+    $content = search_flight($token, $from, $to, $date);
+    file_put_contents("log-" . date('Y-m-d') . ".txt", date('Y:m:d H:i:s') . ' content ' . array_key_exists('departures', $content) . PHP_EOL, FILE_APPEND);
+    $results[0] = $content['departures'];
+    if ($results[0]) {
+        $output = '';
+        $idx = 0;
+        if ($results && count($results) > 0) {
+            foreach ($results as $i => $r) {
+                if (is_array($r)) {
+                    foreach ($r as $key => $row) {
+                        if (is_array($row)) {
+                            foreach ($row as $k => $v) {
+                                //if ($idx < 7) {
+                                $date = date_create_from_format("H:i", '17:00');
+                                $time = $date->format("H:i");
+                                
                                 $output .= 'rute : ' . $v['departure_city_name'] . " ke " . $v['arrival_city_name'] . PHP_EOL;
                                 $output .= 'airlines : ' . $v['airlines_name'] . PHP_EOL;
                                 $output .= 'harga : ' . rp(intval($v['price_value'])) . PHP_EOL;
                                 $output .= 'berangkat : ' . $v['departure_flight_date_str'] . " " . $v['simple_departure_time'] . "-" . $v['simple_arrival_time'] . PHP_EOL;
                                 $output .= PHP_EOL;
+                                //}
+                                $idx++;
                             }
-                            $idx++;
                         }
                     }
                 }
             }
+        } else {
+            $output = 'tidak ada jadwal';
         }
     } else {
         $output = 'tidak ada jadwal';
@@ -141,14 +151,23 @@ if ($jenistransportasi == 'pesawat') {
 
 file_put_contents("log-" . date('Y-m-d') . ".txt", date('Y:m:d H:i:s') . ' - ' . $output . PHP_EOL, FILE_APPEND);
 
-if ($output == '') {
-    $output = 'tidak ada jadwal';
+if ($output == '' or ! array_key_exists('departures', $content)) {
+    $out = [
+        'speech' => 'tidak ada jadwal',
+        'displayText' => 'tidak ada jadwal',
+        'data' => NULL,
+        'contextOut' => NULL,
+        'source' => 'webhook'];
+    file_put_contents("log-" . date('Y-m-d') . ".txt", date('Y:m:d H:i:s') . ' - ' . json_encode($out) . PHP_EOL, FILE_APPEND);
+} else {
+    $out = [
+        'speech' => $output,
+        'displayText' => $output,
+        'data' => NULL,
+        'contextOut' => NULL,
+        'source' => 'webhook'];
+    file_put_contents("log-" . date('Y-m-d') . ".txt", date('Y:m:d H:i:s') . ' - ' . json_encode($out) . PHP_EOL, FILE_APPEND);
 }
-$out = [
-    'speech' => $output,
-    'displayText' => $output,
-    'data' => NULL,
-    'contextOut' => NULL,
-    'source' => 'webhook'];
+
 header('Content-type: application/json');
 echo json_encode($out);
